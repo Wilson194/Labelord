@@ -27,7 +27,8 @@ Notes:
 Frequent errors
 ----------------
 
-* Error with bad request
+Error with bad request
+***********************
 
 ::
 
@@ -41,7 +42,8 @@ Frequent errors
 That happen if you do some requests, that tests don't expect. You can find list of allowed request urls in ``tests/fixtures/casettes/*``
 
 
-* Betamax Error
+Betamax Error
+***************
 
 ::
 
