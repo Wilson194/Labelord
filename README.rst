@@ -27,7 +27,7 @@ Notes:
 Frequent errors
 ----------------
 
-* 1)
+* Error with bad request
 
 ::
 
@@ -37,7 +37,23 @@ Frequent errors
    record_mode: none
    match_options {'uri', 'method'}.\n",)>.exit_code
 
-* 2)
+
+That happen if you do some requests, that tests don't expect. You can find list of allowed request urls in ``tests/fixtures/casettes/*``
+
+
+* Betamax Error
+
+::
+
+<[AttributeError("'BetamaxError' object has no attribute 'message'") raised in repr()] Result object at 0x7f74dbc864e0>.exit_code
+
+
+This is error in Betamax library. You must edit Betamax Exception. Edit in: ``__venv__/lib/python*.*/site-packages/betamax/exceptions.py`` and delete lines:
+
+::
+
+ def __repr__(self):
+     return 'BetamaxError("%s")' % self.message
 
 
 License
