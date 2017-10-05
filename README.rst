@@ -24,6 +24,22 @@ Notes:
    $ python -m pytest pytest tests/
 
 
+Frequent errors
+----------------
+
+* 1)
+
+::
+
+ <Result BetamaxError("A request was made that could not be handled.
+ A request was made to https://api.github.com/*****
+ The settings on the cassette are -
+   record_mode: none
+   match_options {'uri', 'method'}.\n",)>.exit_code
+
+* 2)
+
+
 License
 -------
 
