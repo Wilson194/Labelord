@@ -50,7 +50,7 @@ Betamax Error
 <[AttributeError("'BetamaxError' object has no attribute 'message'") raised in repr()] Result object at 0x7f74dbc864e0>.exit_code
 
 
-This is error in Betamax library. You must edit Betamax Exception. Edit in: ``__venv__/lib/python*.*/site-packages/betamax/exceptions.py`` and delete lines:
+This is error in Betamax library. You must edit Betamax Exception. Edit in (virtual environment): ``__venv__/lib/python*.*/site-packages/betamax/exceptions.py`` and delete lines:
 
 ::
 
