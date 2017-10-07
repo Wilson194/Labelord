@@ -1,0 +1,7 @@
+Knihovny:
+    click
+    request
+    configparser
+    sys
+
+Jinak žádné další knihovny nebyly použity
