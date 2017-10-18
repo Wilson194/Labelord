@@ -324,6 +324,19 @@ def load_config(cfg):
     return config
 
 
+def load_token(config, token):
+    # Load token
+    if not token:
+        token = config.get('github', 'token', fallback=False)
+
+    # Token not set
+    if not token:
+        sys.stderr.write('No GitHub token has been provided\n')
+        quit(3)
+
+    return token
+
+
 def validate_response(response, exitProgram=True):
     """
     Validate response
@@ -372,24 +385,9 @@ def cli(ctx, config, token):
     session = ctx.obj.get('session', requests.Session())
     session.headers = {'User-Agent': 'Python'}
 
-    # Load config
-    cfg = load_config(config)
-
-    # Load token
-    if not token:
-        token = cfg.get('github', 'token', fallback=False)
-
-    # Token not set
-    if not token:
-        sys.stderr.write('No GitHub token has been provided\n')
-        quit(3)
-
-    # Set auth
-    auth = MyAuth(token)
-    session.auth = auth
-
     ctx.obj['session'] = session
-    ctx.obj['config'] = cfg
+    ctx.obj['token'] = token
+    ctx.obj['config'] = config
 
 
 def get_list_repos(session):
@@ -427,6 +425,15 @@ def list_repos(ctx):
     """
 
     session = ctx.obj['session']
+
+    # Load config
+    config = load_config(ctx.obj['config'])
+
+    token = load_token(config, ctx.obj['token'])
+
+    # Set auth
+    auth = MyAuth(token)
+    session.auth = auth
 
     repositories = get_list_repos(session)
 
@@ -479,6 +486,15 @@ def list_labels(ctx, repository):
     """
     session = ctx.obj['session']
 
+    # Load config
+    config = load_config(ctx.obj['config'])
+
+    token = load_token(config, ctx.obj['token'])
+
+    # Set auth
+    auth = MyAuth(token)
+    session.auth = auth
+
     labels = get_list_labels(session, repository)
 
     for label in labels:
@@ -506,7 +522,6 @@ def run(ctx, sourceRepository, allRepos, mode, quiet, verbose, dryRun):
     :return: None
     """
     session = ctx.obj['session']
-    config = ctx.obj['config']
     runConfig = {
         'allRepos': allRepos,
         'mode'    : mode,
@@ -514,6 +529,14 @@ def run(ctx, sourceRepository, allRepos, mode, quiet, verbose, dryRun):
         'verbose' : verbose,
         'dryRun'  : dryRun
     }
+
+    # Load config
+    config = load_config(ctx.obj['config'])
+    token = load_token(config, ctx.obj['token'])
+
+    # Set auth
+    auth = MyAuth(token)
+    session.auth = auth
 
     lu = LabelUpdater(session, config, runConfig)
 
