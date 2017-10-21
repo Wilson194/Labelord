@@ -1,3 +1,4 @@
+import pytest
 
 
 def test_color_case_sensitivity(invoker, utils):
@@ -65,10 +66,14 @@ def test_change_not_owned(invoker, utils):
     assert lines[-2] == '[SUMMARY] 1 error(s) in total, please check log above'
 
 
-def test_help(invoker_norec):
+@pytest.mark.parametrize('isolated', [True, False])
+def test_help(invoker_norec, isolated):
     # There must be standard click help describing options
     # and commands (you should write description for each)
-    # It should look like this:
+    #
+    # Local default config is not required (no token for help is OK)!
+    #
+    # It could look like this (types and help texts may differ):
     # Usage: labelord.py [OPTIONS] COMMAND [ARGS]...
     #
     # Options:
@@ -81,7 +86,7 @@ def test_help(invoker_norec):
     #   list_labels  Listing labels of desired repository.
     #   list_repos   Listing accessible repositories.
     #   run          Run labels processing.
-    invocation = invoker_norec('--help')
+    invocation = invoker_norec('--help', isolated=isolated)
 
     assert invocation.result.exit_code == 0
     assert '-c, --config' in invocation.result.output
@@ -93,57 +98,70 @@ def test_help(invoker_norec):
     assert 'run' in invocation.result.output
 
 
-def test_help_list_labels(invoker_norec):
+@pytest.mark.parametrize('isolated', [True, False])
+def test_help_list_labels(invoker_norec, isolated):
     # There must be standard click help describing options
     # and commands (you should write description for each)
-    # It should look like this:
+    #
+    # Local default config is not required (no token for help is OK)!
+    #
+    # It could look like this (help text may differ):
     # Usage: labelord.py list_labels [OPTIONS] REPOSITORY
     #
     # Listing labels of desired repository.
     #
     # Options:
     #   --help  Show this message and exit.
-    invocation = invoker_norec('list_labels', '--help')
+    invocation = invoker_norec('list_labels', '--help', isolated=isolated)
 
     assert invocation.result.exit_code == 0
     assert '--help' in invocation.result.output
 
 
-def test_help_list_repos(invoker_norec):
+@pytest.mark.parametrize('isolated', [True, False])
+def test_help_list_repos(invoker_norec, isolated):
     # There must be standard click help describing options
     # and commands (you should write description for each)
-    # It should look like this:
+    #
+    # Local default config is not required (no token for help is OK)!
+    #
+    # It could look like this (help text may differ):
     # Usage: labelord.py list_repos [OPTIONS]
     #
     # Listing accessible repositories.
     #
     # Options:
     #   --help Show this message and exit.
-    invocation = invoker_norec('list_repos', '--help')
+    invocation = invoker_norec('list_repos', '--help', isolated=isolated)
 
     assert invocation.result.exit_code == 0
     assert '--help' in invocation.result.output
 
 
-def test_help_list_run(invoker_norec):
+@pytest.mark.parametrize('isolated', [True, False])
+def test_help_list_run(invoker_norec, isolated):
     # There must be standard click help describing options
     # and commands (you should write description for each)
-    # It should look like this:
+    #
+    # Local default config is not required (no token for help is OK)!
+    #
+    # It could look like this (types and help texts may differ):
     # Usage: labelord.py run [OPTIONS] <update|replace>
     #
     # Run labels processing.
     #
     # Options:
-    #   -t, --template-repo TEXT  Repository which serves as labels template.
+    #   -r, --template-repo TEXT  Repository which serves as labels template.
     #   -d, --dry-run             Proceed with just dry run.
     #   -v, --verbose             Really exhaustive output.
     #   -q, --quiet               No output at all.
     #   -a, --all-repos           Run for all repositories available.
     #   --help                    Show this message and exit.
-    invocation = invoker_norec('run', '--help')
+    invocation = invoker_norec('run', '--help', isolated=isolated)
 
     assert invocation.result.exit_code == 0
-    assert '-t, --template-repo' in invocation.result.output
+    assert ('-r, --template-repo' in invocation.result.output or
+            '-t, --template-repo' in invocation.result.output)  # old mistake
     assert '-d, --dry-run' in invocation.result.output
     assert '-v, --verbose' in invocation.result.output
     assert '-q, --quiet' in invocation.result.output
@@ -151,11 +169,15 @@ def test_help_list_run(invoker_norec):
     assert '--help' in invocation.result.output
 
 
-def test_version(invoker_norec):
+@pytest.mark.parametrize('isolated', [True, False])
+def test_version(invoker_norec, isolated):
     # There must be standard click version option
+    #
+    # Local default config is not required (no token for version is OK)!
+    #
     # It should look like this:
     # labelord, version 0.1
-    invocation = invoker_norec('--version')
+    invocation = invoker_norec('--version', isolated=isolated)
 
     assert invocation.result.exit_code == 0
     assert 'labelord, version 0.1' in invocation.result.output
@@ -165,7 +187,8 @@ def test_precedence_template_repo(invoker, utils):
     # repo4 is empty and has higher precedence than repo3
     # in the config
     invocation = invoker('-c', utils.config('config_templaterepo'),
-                         'run', 'update', '-t', 'MarekSuchanek/repo4',
+                         'run', 'update', '--template-repo',
+                         'MarekSuchanek/repo4',
                          session_expectations={
                              'get': 3,
                              'post': 0,
@@ -177,4 +200,3 @@ def test_precedence_template_repo(invoker, utils):
     assert invocation.result.exit_code == 0
     assert len(lines) == 2 and lines[-1] == ''
     assert lines[0] == 'SUMMARY: 2 repo(s) updated successfully'
-

@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 # This is skeleton for labelord module
 # MI-PYT, task 1 (requests+click)
 # File: labelord.py
@@ -6,6 +9,11 @@ import click
 import requests
 import configparser
 import sys
+import flask
+import jinja2
+import os
+import hmac
+import hashlib
 
 
 class MyAuth(requests.auth.AuthBase):
@@ -64,11 +72,11 @@ class LabelUpdater:
         """
         self.session = session
         self.config = config
-        self.allRepos = runConfig['allRepos']
-        self.dry = runConfig['dryRun']
-        self.verbose = runConfig['verbose']
-        self.quiet = runConfig['quiet']
-        self.mode = runConfig['mode']
+        self.allRepos = runConfig.get('allRepos', None)
+        self.dry = runConfig.get('dryRun', None)
+        self.verbose = runConfig.get('verbose', None)
+        self.quiet = runConfig.get('quiet', None)
+        self.mode = runConfig.get('mode', None)
         self.errorNum = 0
         self.reposNum = 0
 
@@ -369,7 +377,8 @@ def validate_response(response, exitProgram=True):
 
 
 @click.group('labelord')
-@click.option('-c', '--config', default='config.cfg', type=click.Path(), help='Specify path to config file.')
+@click.option('-c', '--config', envvar='LABELORD_CONFIG', default='config.cfg', type=click.Path(),
+              help='Specify path to config file.')
 @click.option('-t', '--token', envvar='GITHUB_TOKEN', type=str, help='Token for GitHub API.')
 @click.version_option('labelord, version 0.1')
 @click.pass_context
@@ -545,6 +554,186 @@ def run(ctx, sourceRepository, allRepos, mode, quiet, verbose, dryRun):
     targetRepositories = lu.get_target_repositories()
 
     lu.update_labels(sourceLabels, targetRepositories)
+
+
+#####################################################################
+# STARING NEW FLASK SKELETON (Task 2 - flask)
+
+
+class LabelordWeb(flask.Flask):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.session = None
+        self.labelordConfig = None
+        self.repos = None
+        self.secret = None
+        self.updatedRepos = []
+        # You can do something here, but you don't have to...
+        # Adding more args before *args is also possible
+        # You need to pass import_name to super as first arg or
+        # via keyword (e.g. import_name=__name__)
+        # Be careful not to override something Flask-specific
+        # @see http://flask.pocoo.org/docs/0.12/api/
+        # @see https://github.com/pallets/flask
+
+
+    def inject_session(self, session):
+        # TODO: inject session for communication with GitHub
+        # The tests will call this method to pass the testing session.
+        # Always use session from this call (it will be called before
+        # any HTTP request). If this method is not called, create new
+        # session.
+        self.session = session
+
+
+    def set_labelord_config(self, config):
+        self.labelordConfig = config
+
+
+    def reload_config(self):
+        # TODO: check envvar LABELORD_CONFIG and reload the config
+        # Because there are problems with reimporting the app with
+        # different configuration, this method will be called in
+        # order to reload configuration file. Check if everything
+        # is correctly set-up
+        configPath = os.getenv('LABELORD_CONFIG', 'config.cfg')
+
+        self.labelordConfig = load_config(configPath)
+
+        token = load_token(self.labelordConfig, '')
+
+        labelUpdater = LabelUpdater(self.session, self.labelordConfig, {})
+        repos = labelUpdater.get_target_repositories()
+
+        if self.labelordConfig.get('github', 'webhook_secret', fallback=None) is None:
+            sys.stderr.write('No webhook secret has been provided\n')
+            quit(8)
+
+
+# TODO: instantiate LabelordWeb app
+# Be careful with configs, this is module-wide variable,
+# you want to be able to run CLI app as it was in task 1.
+app = LabelordWeb(__name__)
+
+
+# TODO: implement web app
+# hint: you can use flask.current_app (inside app context)
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if flask.request.method == 'POST':
+        return post_request()
+    else:
+        myApp = flask.current_app
+
+        session = myApp.session
+
+        labelUpdater = LabelUpdater(session, myApp.labelordConfig, {})
+        repos = labelUpdater.get_target_repositories()
+        return flask.render_template('index.html', repos=repos)
+
+
+def post_request():
+    myApp = flask.current_app
+    cfg = myApp.labelordConfig
+
+    headers = flask.request.headers
+
+    rawData = flask.request.data
+
+    js = flask.request.get_json()
+
+    # Validate header action
+    if headers['X-GitHub-Event'] == 'ping':
+        return 'Okeeej'
+
+    elif headers['X-Github-Event'] == 'label':
+        pass
+
+    else:
+        quit(1001)
+
+    # Check signature
+    shaSignature = headers['X-Hub-Signature'].replace('sha1=', '')
+    correct = check_signature(rawData, cfg.get('github', 'webhook_secret'), shaSignature)
+    if not correct:
+        quit(102)
+
+    if js['action'] == 'created':
+        create_label_request(js)
+
+    return 'ahoj'
+
+
+def create_label_request(js):
+    myApp = flask.current_app
+    session = myApp.session
+
+    if js['repository']['full_name'] in myApp.updatedRepos:
+        myApp.updatedRepos.remove(js['repository']['full_name'])
+        return
+
+    labelUpdater = LabelUpdater(session, myApp.labelordConfig, {})
+    repos = labelUpdater.get_target_repositories()
+
+    sourceRepo = js['repository']['full_name']
+
+
+    label = Label(js['label']['name'], js['label']['color'])
+
+    if sourceRepo in repos:
+        repos.remove(sourceRepo)
+
+    for repo in repos:
+        myApp.updatedRepos.append(repo)
+        labelUpdater.add_label(repo, label)
+
+
+def check_signature(msg, secret, signature):
+    hash = hmac.new(secret.encode(), msg, hashlib.sha1)
+    if signature == hash.hexdigest():
+        return True
+    else:
+        return False
+
+
+@app.template_filter('gitLink')
+def convert_time(text):
+    """Convert the time format to a different one"""
+
+    return jinja2.Markup('<a href="https://github.com/' + text + '">' + text + '</a>')
+
+
+@cli.command()
+@click.option('-h', '--host', 'hostname', help='Host name for start server', default='127.0.0.1')
+@click.option('-p', '--port', 'port', help='Port for start server', default=5000, type=int)
+@click.option('-d', '--debug', 'debug', help='Enable flask server debug mode', is_flag=True)
+@click.pass_context
+def run_server(ctx, hostname, port, debug):
+    # TODO: implement the command for starting web app (use app.run)
+    # Don't forget to app the session from context to app
+
+    session = ctx.obj['session']
+
+    # Load config
+    config = load_config(ctx.obj['config'])
+
+    token = load_token(config, ctx.obj['token'])
+
+    # Set auth
+    auth = MyAuth(token)
+    session.auth = auth
+
+    app.inject_session(session)
+    app.set_labelord_config(config)
+
+
+    app.run(hostname, port, debug)
+
+
+# ENDING  NEW FLASK SKELETON
+#####################################################################
 
 
 if __name__ == '__main__':
