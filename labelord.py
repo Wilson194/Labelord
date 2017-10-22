@@ -556,163 +556,20 @@ def run(ctx, sourceRepository, allRepos, mode, quiet, verbose, dryRun):
     lu.update_labels(sourceLabels, targetRepositories)
 
 
-#####################################################################
-# STARING NEW FLASK SKELETON (Task 2 - flask)
-
-
-class LabelordWeb(flask.Flask):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.session = None
-        self.labelordConfig = None
-        self.repos = None
-        self.secret = None
-        self.updatedRepos = []
-        # You can do something here, but you don't have to...
-        # Adding more args before *args is also possible
-        # You need to pass import_name to super as first arg or
-        # via keyword (e.g. import_name=__name__)
-        # Be careful not to override something Flask-specific
-        # @see http://flask.pocoo.org/docs/0.12/api/
-        # @see https://github.com/pallets/flask
-
-
-    def inject_session(self, session):
-        # TODO: inject session for communication with GitHub
-        # The tests will call this method to pass the testing session.
-        # Always use session from this call (it will be called before
-        # any HTTP request). If this method is not called, create new
-        # session.
-        self.session = session
-
-
-    def set_labelord_config(self, config):
-        self.labelordConfig = config
-
-
-    def reload_config(self):
-        # TODO: check envvar LABELORD_CONFIG and reload the config
-        # Because there are problems with reimporting the app with
-        # different configuration, this method will be called in
-        # order to reload configuration file. Check if everything
-        # is correctly set-up
-        configPath = os.getenv('LABELORD_CONFIG', 'config.cfg')
-
-        self.labelordConfig = load_config(configPath)
-
-        token = load_token(self.labelordConfig, '')
-
-        labelUpdater = LabelUpdater(self.session, self.labelordConfig, {})
-        repos = labelUpdater.get_target_repositories()
-
-        if self.labelordConfig.get('github', 'webhook_secret', fallback=None) is None:
-            sys.stderr.write('No webhook secret has been provided\n')
-            quit(8)
-
-
-# TODO: instantiate LabelordWeb app
-# Be careful with configs, this is module-wide variable,
-# you want to be able to run CLI app as it was in task 1.
-app = LabelordWeb(__name__)
-
-
-# TODO: implement web app
-# hint: you can use flask.current_app (inside app context)
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if flask.request.method == 'POST':
-        return post_request()
-    else:
-        myApp = flask.current_app
-
-        session = myApp.session
-
-        labelUpdater = LabelUpdater(session, myApp.labelordConfig, {})
-        repos = labelUpdater.get_target_repositories()
-        return flask.render_template('index.html', repos=repos)
-
-
-def post_request():
-    myApp = flask.current_app
-    cfg = myApp.labelordConfig
-
-    headers = flask.request.headers
-
-    rawData = flask.request.data
-
-    js = flask.request.get_json()
-
-    # Validate header action
-    if headers['X-GitHub-Event'] == 'ping':
-        return 'Okeeej'
-
-    elif headers['X-Github-Event'] == 'label':
-        pass
-
-    else:
-        quit(1001)
-
-    # Check signature
-    shaSignature = headers['X-Hub-Signature'].replace('sha1=', '')
-    correct = check_signature(rawData, cfg.get('github', 'webhook_secret'), shaSignature)
-    if not correct:
-        quit(102)
-
-    if js['action'] == 'created':
-        create_label_request(js)
-
-    return 'ahoj'
-
-
-def create_label_request(js):
-    myApp = flask.current_app
-    session = myApp.session
-
-    if js['repository']['full_name'] in myApp.updatedRepos:
-        myApp.updatedRepos.remove(js['repository']['full_name'])
-        return
-
-    labelUpdater = LabelUpdater(session, myApp.labelordConfig, {})
-    repos = labelUpdater.get_target_repositories()
-
-    sourceRepo = js['repository']['full_name']
-
-
-    label = Label(js['label']['name'], js['label']['color'])
-
-    if sourceRepo in repos:
-        repos.remove(sourceRepo)
-
-    for repo in repos:
-        myApp.updatedRepos.append(repo)
-        labelUpdater.add_label(repo, label)
-
-
-def check_signature(msg, secret, signature):
-    hash = hmac.new(secret.encode(), msg, hashlib.sha1)
-    if signature == hash.hexdigest():
-        return True
-    else:
-        return False
-
-
-@app.template_filter('gitLink')
-def convert_time(text):
-    """Convert the time format to a different one"""
-
-    return jinja2.Markup('<a href="https://github.com/' + text + '">' + text + '</a>')
-
-
 @cli.command()
 @click.option('-h', '--host', 'hostname', help='Host name for start server', default='127.0.0.1')
 @click.option('-p', '--port', 'port', help='Port for start server', default=5000, type=int)
 @click.option('-d', '--debug', 'debug', help='Enable flask server debug mode', is_flag=True)
 @click.pass_context
 def run_server(ctx, hostname, port, debug):
-    # TODO: implement the command for starting web app (use app.run)
-    # Don't forget to app the session from context to app
+    """
+    Run server command
+    :param ctx: context from click
+    :param hostname: hostname for flask run
+    :param port: port for flask run
+    :param debug: enable debug mode
+    :return: None
+    """
 
     session = ctx.obj['session']
 
@@ -728,8 +585,290 @@ def run_server(ctx, hostname, port, debug):
     app.inject_session(session)
     app.set_labelord_config(config)
 
-
     app.run(hostname, port, debug)
+
+
+#####################################################################
+# FLASK APP
+
+
+class LabelordWeb(flask.Flask):
+    """
+    Custom class for app, extend flask.Flask
+    """
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.session = None
+        self.labelordConfig = None
+        self.repos = None
+        self.secret = None
+        self.updatedRepos = []
+        self.lastAction = None
+
+
+    def inject_session(self, session):
+        """
+        Inject session to current app (for testing)
+        :param session: session class
+        :return: None
+        """
+        self.session = session
+
+
+    def set_labelord_config(self, config):
+        """
+        Setter for config
+        :param config: config object
+        :return: None
+        """
+        self.labelordConfig = config
+
+
+    def reload_config(self):
+        """
+        Reload config from system variable
+        :return: None
+        """
+        configPath = os.getenv('LABELORD_CONFIG', 'config.cfg')
+
+        self.labelordConfig = load_config(configPath)
+
+        token = load_token(self.labelordConfig, '')
+
+        auth = MyAuth(token)
+        self.session.auth = auth
+
+        labelUpdater = LabelUpdater(self.session, self.labelordConfig, {})
+        repos = labelUpdater.get_target_repositories()
+
+        if self.labelordConfig.get('github', 'webhook_secret', fallback=None) is None:
+            sys.stderr.write('No webhook secret has been provided\n')
+            quit(8)
+
+
+def create_app():
+    """
+    Factory creator for flask App
+    :return: app class
+    """
+    app = LabelordWeb(__name__)
+
+    configPath = os.getenv('LABELORD_CONFIG', 'config.cfg')
+
+    labelordConfig = load_config(configPath)
+
+    token = load_token(labelordConfig, '')
+
+    auth = MyAuth(token)
+    session = requests.Session()
+    session.headers = {'User-Agent': 'Python'}
+    session.auth = auth
+
+    app.session = session
+    app.labelordConfig = labelordConfig
+
+    return app
+
+
+app = create_app()
+
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if flask.request.method == 'POST':
+        return post_request()
+    else:
+        myApp = flask.current_app
+
+        session = myApp.session
+
+        labelUpdater = LabelUpdater(session, myApp.labelordConfig, {})
+        repos = labelUpdater.get_target_repositories()
+        return flask.render_template('index.html', repos=repos)
+
+
+@app.template_filter('gitLink')
+def convert_time(text):
+    """Convert the time format to a different one"""
+
+    return jinja2.Markup('<a href="https://github.com/' + text + '">' + text + '</a>')
+
+
+#################################################################################
+#  functions for label handling
+
+def post_request():
+    """
+    Request handler for POST method
+    :return:
+    """
+    myApp = flask.current_app
+    cfg = myApp.labelordConfig
+
+    headers = flask.request.headers
+
+    rawData = flask.request.data
+
+    js = flask.request.get_json()
+
+    # Validate header action
+    if headers['X-GitHub-Event'] == 'ping':
+        return 'Everything is OK'
+
+    elif headers['X-Github-Event'] == 'label':
+        pass
+
+    else:
+        flask.abort(400)
+
+    # Check signature
+    if 'X-Hub-Signature' not in headers:
+        return flask.abort(401)
+    shaSignature = headers['X-Hub-Signature'].replace('sha1=', '')
+    correct = check_signature(rawData, cfg.get('github', 'webhook_secret'), shaSignature)
+    if not correct:
+        return flask.abort(401)
+
+    if not check_allowed_repo(js['repository']['full_name']):
+        return flask.abort(400)
+
+    if js['action'] != myApp.lastAction:
+        myApp.updatedRepos = []
+        myApp.lastAction = js['action']
+
+    if js['action'] == 'created':
+        create_label_request(js)
+
+    elif js['action'] == 'edited':
+        edit_label_request(js)
+
+    elif js['action'] == 'deleted':
+        delete_label_request(js)
+
+    return 'Nothing is happend'
+
+
+def check_allowed_repo(repo):
+    """
+    Check if repo is allowed in config
+    :param repo: repository string
+    :return: True if allowed, False otherwise
+    """
+    myApp = flask.current_app
+    session = myApp.session
+
+    labelUpdater = LabelUpdater(session, myApp.labelordConfig, {})
+    repos = labelUpdater.get_target_repositories()
+
+    if repo in repos:
+        return True
+    else:
+        return False
+
+
+def edit_label_request(js):
+    """
+    Handle POST edit label
+    :param js: json request object
+    :return: None
+    """
+    myApp = flask.current_app
+    session = myApp.session
+
+    if js['repository']['full_name'] in myApp.updatedRepos:
+        myApp.updatedRepos.remove(js['repository']['full_name'])
+        return
+
+    labelUpdater = LabelUpdater(session, myApp.labelordConfig, {})
+    repos = labelUpdater.get_target_repositories()
+
+    sourceRepo = js['repository']['full_name']
+
+    newLabel = Label(js['label']['name'], js['label']['color'])
+
+    oldLabel = Label(js['changes']['name']['from'] if 'name' in js['changes'] else js['label']['name'],
+                     js['changes']['color']['from'] if 'color' in js['changes'] else js['label']['color'])
+
+    if sourceRepo in repos:
+        repos.remove(sourceRepo)
+
+    for repo in repos:
+        myApp.updatedRepos.append(repo)
+        labelUpdater.update_label(repo, newLabel, oldLabel)
+
+
+def delete_label_request(js):
+    """
+    Handle POST delete label
+    :param js: json request object
+    :return: None
+    """
+    myApp = flask.current_app
+    session = myApp.session
+
+    if js['repository']['full_name'] in myApp.updatedRepos:
+        myApp.updatedRepos.remove(js['repository']['full_name'])
+        return
+
+    labelUpdater = LabelUpdater(session, myApp.labelordConfig, {})
+    repos = labelUpdater.get_target_repositories()
+
+    sourceRepo = js['repository']['full_name']
+
+    label = Label(js['label']['name'], js['label']['color'])
+
+    if sourceRepo in repos:
+        repos.remove(sourceRepo)
+
+    for repo in repos:
+        myApp.updatedRepos.append(repo)
+        labelUpdater.remove_label(repo, label)
+
+
+def create_label_request(js):
+    """
+    Handle POST create label
+    :param js: json request object
+    :return: None
+    """
+    myApp = flask.current_app
+    session = myApp.session
+
+    if js['repository']['full_name'] in myApp.updatedRepos:
+        myApp.updatedRepos.remove(js['repository']['full_name'])
+        return
+
+    labelUpdater = LabelUpdater(session, myApp.labelordConfig, {})
+    repos = labelUpdater.get_target_repositories()
+
+    sourceRepo = js['repository']['full_name']
+
+    label = Label(js['label']['name'], js['label']['color'])
+
+    if sourceRepo in repos:
+        repos.remove(sourceRepo)
+
+    for repo in repos:
+        # myApp.updatedRepos.append(repo)
+        labelUpdater.add_label(repo, label)
+
+
+def check_signature(msg, secret, signature):
+    """
+    Check sha1 sum
+    :param msg: body message
+    :param secret: secret from config
+    :param signature: signature from GitHub header
+    :return: True if checked, False otherwise
+    """
+    hash = hmac.new(secret.encode(), msg, hashlib.sha1)
+    if signature == hash.hexdigest():
+        return True
+    else:
+        return False
 
 
 # ENDING  NEW FLASK SKELETON
