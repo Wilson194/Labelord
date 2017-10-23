@@ -660,15 +660,17 @@ def create_app():
 
     labelordConfig = load_config(configPath)
 
-    token = load_token(labelordConfig, '')
-
-    auth = MyAuth(token)
-    session = requests.Session()
-    session.headers = {'User-Agent': 'Python'}
-    session.auth = auth
-
-    app.session = session
     app.labelordConfig = labelordConfig
+
+    # token = load_token(labelordConfig, '')
+
+    # auth = MyAuth(token)
+    # session = requests.Session()
+    # session.headers = {'User-Agent': 'Python'}
+    # session.auth = auth
+    #
+    # app.session = session
+
 
     return app
 
@@ -678,10 +680,21 @@ app = create_app()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    myApp = flask.current_app
+    if myApp.session is None:
+        token = load_token(myApp.labelordConfig, '')
+
+        auth = MyAuth(token)
+        session = requests.Session()
+        session.headers = {'User-Agent': 'Python'}
+        session.auth = auth
+
+        myApp.session = session
+
     if flask.request.method == 'POST':
         return post_request()
     else:
-        myApp = flask.current_app
+        # myApp = flask.current_app
 
         session = myApp.session
 
