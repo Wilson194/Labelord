@@ -4,7 +4,6 @@
 # This is skeleton for labelord module
 # MI-PYT, task 1 (requests+click)
 # File: labelord.py
-# TODO: create requirements.txt and install
 import click
 import requests
 import configparser
@@ -662,16 +661,6 @@ def create_app():
 
     app.labelordConfig = labelordConfig
 
-    # token = load_token(labelordConfig, '')
-
-    # auth = MyAuth(token)
-    # session = requests.Session()
-    # session.headers = {'User-Agent': 'Python'}
-    # session.auth = auth
-    #
-    # app.session = session
-
-
     return app
 
 
@@ -694,8 +683,6 @@ def index():
     if flask.request.method == 'POST':
         return post_request()
     else:
-        # myApp = flask.current_app
-
         session = myApp.session
 
         labelUpdater = LabelUpdater(session, myApp.labelordConfig, {})
