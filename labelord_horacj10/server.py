@@ -7,7 +7,7 @@ import flask
 import jinja2
 import requests
 
-from labelord import github
+from labelord_horacj10 import github
 
 
 server = flask.Blueprint('server', __name__, template_folder='templates')

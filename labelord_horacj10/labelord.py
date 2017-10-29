@@ -6,8 +6,8 @@ import os
 import click
 import requests
 
-from labelord import server, github
-from labelord.server import server as serverBlueprint
+from labelord_horacj10 import server, github
+from labelord_horacj10.server import server as serverBlueprint
 
 
 @click.group('labelord')

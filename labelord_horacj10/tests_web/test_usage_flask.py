@@ -7,7 +7,7 @@ def test_flask_run(utils):
     # Use Werkzeug as flask run does but use it
     # to test (flask run uses run_simple() instead)
     os.environ['LABELORD_CONFIG'] = utils.config('config_3repos')
-    from labelord import app
+    from labelord_horacj10 import app
     client = Client(app, BaseResponse)
     result = client.get('/')
     assert result.status_code == 200
