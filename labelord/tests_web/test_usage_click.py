@@ -4,7 +4,7 @@ import pytest
 def test_click_run_server(invoker, utils):
     # Test if click command is implemented and use app.run(...)
     # to run the server, then test if the app is running fine
-    from labelord_horacj10 import app
+    from labelord import app
 
     def mock_run(host, port, debug, *opts):
         print('Host:', host)

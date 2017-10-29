@@ -12,12 +12,11 @@ setup(
     author_email='horacj10@fit.cvut.cz',
     license='GNU',
     url='https://github.com/Wilson194/MI-PYT-DU1/',
-    packages=['labelord_horacj10'],
+    packages=['labelord'],
     install_requires=['Flask', 'click>=6', 'jinja2', 'requests', 'click', 'configparser'],
     entry_points={
         'console_scripts': [
-            'labelord = labelord_horacj10.labelord:main',
-            'labelord_horacj10 = labelord_horacj10.labelord:main',
+            'labelord = labelord.labelord:main',
         ],
     },
     classifiers=[
@@ -34,7 +33,7 @@ setup(
         'Environment :: Web Environment',
         'Development Status :: 4 - Beta'
     ],
-    package_data={'labelord_horacj10': ['templates/*.html']},
+    package_data={'labelord': ['templates/*.html']},
     zip_safe=False,
     keywords='labelord GitHub labels clone webserver flask requests',
     # summary='Application for GitHub issues labels replication'

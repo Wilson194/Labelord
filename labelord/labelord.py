@@ -6,15 +6,15 @@ import os
 import click
 import requests
 
-from labelord_horacj10 import server, github
-from labelord_horacj10.server import server as serverBlueprint
+from labelord import server, github
+from labelord.server import server as serverBlueprint
 
 
 @click.group('labelord')
 @click.option('-c', '--config', envvar='LABELORD_CONFIG', default='config.cfg', type=click.Path(),
               help='Specify path to config file.')
 @click.option('-t', '--token', envvar='GITHUB_TOKEN', type=str, help='Token for GitHub API.')
-@click.version_option('labelord, version 0.1')
+@click.version_option('labelord, version 0.3')
 @click.pass_context
 def cli(ctx, config, token):
     """
