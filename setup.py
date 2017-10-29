@@ -29,9 +29,13 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Topic :: Software Development :: Version Control :: Git',
         'Framework :: Flask',
-        'Environment :: Console'
+        'Environment :: Console',
+        'Environment :: Web Environment',
+        'Development Status :: 4 - Beta'
     ],
     package_data={'labelord': ['templates/*.html']},
     zip_safe=False,
+    keywords='labelord GitHub labels clone webserver flask requests',
+    summary='Application for GitHub issues labels replication'
 
 )
