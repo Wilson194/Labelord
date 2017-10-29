@@ -36,6 +36,6 @@ setup(
     package_data={'labelord': ['templates/*.html']},
     zip_safe=False,
     keywords='labelord GitHub labels clone webserver flask requests',
-    summary='Application for GitHub issues labels replication'
+    # summary='Application for GitHub issues labels replication'
 
 )
