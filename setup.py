@@ -28,7 +28,8 @@ setup(
         'Natural Language :: English',
         'Operating System :: POSIX :: Linux',
         'Topic :: Software Development :: Version Control :: Git',
-        'Framework :: Flask'
+        'Framework :: Flask',
+        'Environment :: Console'
     ],
     package_data={'labelord': ['templates/*.html']},
     zip_safe=False,
