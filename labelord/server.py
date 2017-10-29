@@ -1,10 +1,13 @@
-import flask
+import hashlib
 import hmac
 import os
-import requests
-import github
-import jinja2
 import sys
+
+import flask
+import jinja2
+import requests
+
+from labelord import github
 
 
 server = flask.Blueprint('server', __name__, template_folder='templates')

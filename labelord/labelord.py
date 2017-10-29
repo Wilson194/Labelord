@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
+
 import click
 import requests
-import os
-import github
-import server
-from server import server as serverBlueprint
+
+from labelord import server, github
+from labelord.server import server as serverBlueprint
 
 
 @click.group('labelord')
@@ -184,4 +185,8 @@ app.register_blueprint(serverBlueprint)
 app.jinja_env.filters['gitLink'] = server.convert_time
 
 if __name__ == '__main__':
+    cli(obj={})
+
+
+def main():
     cli(obj={})
