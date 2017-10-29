@@ -5,10 +5,10 @@ with open('README') as f:
 
 setup(
     name='labelord_horacj10',
-    version='0.3',
+    version='0.3.1',
     description='Application for manipulation with labels at GitHub',
     long_description=long_description,
-    author='Jan Horáče  k',
+    author='Jan Horáče',
     author_email='horacj10@fit.cvut.cz',
     license='GNU',
     url='https://github.com/Wilson194/MI-PYT-DU1/',
