@@ -4,7 +4,7 @@ with open('README') as f:
     long_description = ''.join(f.readlines())
 
 setup(
-    name='labelord',
+    name='labelord_horacj10',
     version='0.3',
     description='Application for manipulation with labels at GitHub',
     long_description=long_description,
