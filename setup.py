@@ -19,6 +19,7 @@ setup(
             'labelord = labelord.labelord:main',
         ],
     },
+    package_data={'labelord': ['templates/*.html']},
     zip_safe=False,
 
 )
