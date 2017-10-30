@@ -1,2 +1,3 @@
 include LICENSE
 include README
+include default_config.cfg
