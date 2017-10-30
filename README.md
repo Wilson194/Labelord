@@ -33,7 +33,7 @@ Basic commands:
 * labelord run_server - run replication webserver  
 
 ### Pypi
-You can find this project at testing Pypi at address [https://test.pypi.org/project/labelord-horacj10/](Pypi) 
+You can find this project at testing Pypi at address [https://test.pypi.org/project/labelord-horacj10/] 
 
 ### License
 
