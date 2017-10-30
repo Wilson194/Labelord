@@ -32,6 +32,8 @@ Basic commands:
 * labelord run [mode[] - run editing of labels based on config
 * labelord run_server - run replication webserver  
 
+### Pypi
+You can find this project at testing Pypi at address [https://test.pypi.org/project/labelord-horacj10/](Pypi) 
 
 ### License
 
