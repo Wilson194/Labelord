@@ -38,7 +38,7 @@ You can find this project at testing Pypi at address [https://test.pypi.org/proj
 ### License
 
 
-This project is licensed under the GNU License - see the [LICENSE](LICENSE) file for more details.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for more details.
 
 
 
