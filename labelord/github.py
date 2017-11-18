@@ -1,6 +1,7 @@
 import requests
 import configparser
 import sys
+import string
 
 
 class MyAuth(requests.auth.AuthBase):
@@ -29,6 +30,10 @@ class Label:
 
 
     def __init__(self, name, color):
+        if not all(c in string.hexdigits for c in color):
+            raise ValueError('Label color must be hexadecimal number')
+        if len(color) != 6:
+            raise ValueError('Label color must have 6 digit! (RGB in hexadecimal)')
         self.name = name
         self.color = color
 
@@ -280,7 +285,7 @@ class LabelUpdater:
         self.print_log(repository, 'DEL', label, error)
 
 
-def find_label(label, iterable):
+def find_label(label: Label, iterable):
     """
     Find class Label in list of Label classes
     :param label: searched label

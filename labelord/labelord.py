@@ -182,7 +182,7 @@ def create_app():
 
 app = create_app()
 app.register_blueprint(serverBlueprint)
-app.jinja_env.filters['gitLink'] = server.convert_time
+app.jinja_env.filters['gitLink'] = server.convert_git_repo
 
 if __name__ == '__main__':
     cli(obj={})

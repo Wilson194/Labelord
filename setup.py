@@ -5,7 +5,7 @@ with open('README') as f:
 
 setup(
     name='labelord_horacj10',
-    version='0.3.4',
+    version='0.4.0',
     description='Application for manipulation with labels at GitHub',
     long_description=long_description,
     author='Jan Horáček',
@@ -13,7 +13,7 @@ setup(
     license='GNU General Public License v3.0',
     url='https://github.com/Wilson194/MI-PYT-DU1/',
     packages=['labelord'],
-    install_requires=['Flask', 'click>=6', 'jinja2', 'requests', 'click', 'configparser'],
+    install_requires=['Flask', 'click>=6', 'jinja2', 'requests', 'click', 'configparser', 'pytest'],
     entry_points={
         'console_scripts': [
             'labelord = labelord.labelord:main',
@@ -35,8 +35,11 @@ setup(
         'Development Status :: 4 - Beta'
     ],
     package_data={'labelord': ['templates/*.html']},
-    zip_safe=False,
+    zip_safe=True,
     keywords='labelord GitHub labels clone webserver flask requests',
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest', 'betamax', 'flexmock'],
+    test_suite="tests",
     # summary='Application for GitHub issues labels replication'
 
 )

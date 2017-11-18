@@ -94,7 +94,7 @@ def index():
 
 
 # @server.template_filter('gitLink')
-def convert_time(text):
+def convert_git_repo(text):
     """Convert the time format to a different one"""
 
     return jinja2.Markup('<a href="https://github.com/' + text + '">' + text + '</a>')

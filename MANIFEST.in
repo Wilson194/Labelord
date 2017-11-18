@@ -1,3 +1,7 @@
 include LICENSE
 include README
 include default_config.cfg
+include tests/test_unit/*.py
+include tests/test_unit/fixtures/cassettes/*.json
+include tests/test_unit/fixtures/configs/*.cfg
+include tests/test_unit/fixtures/json/*.json
