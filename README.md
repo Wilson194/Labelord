@@ -32,8 +32,11 @@ Basic commands:
 * labelord run [mode[] - run editing of labels based on config
 * labelord run_server - run replication webserver  
 
-### Pypi
-You can find this project at testing Pypi at address [https://test.pypi.org/project/labelord-horacj10/] 
+
+### Test
+There are several test located in folder tests. You can run test by `setup.py test`. Tests using betamax and recording 
+cassettes. Recorded cassettes are in repository. If you want to record new cassettes, you must add path to auth file to 
+sys variable `LABELORD_AUTH`. In this file you must specify `token` under section `github` 
 
 ### License
 
