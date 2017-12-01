@@ -6,7 +6,9 @@ Labelord application
     :target: https://travis-ci.com/Wilson194/Labelord
 
 
-This is project for controlling, creating and cloning GitHub issues labels (based on FIT CUT MI-PYT project)
+This is project for controlling, creating and cloning GitHub issues labels (based on FIT CUT MI-PYT project).
+
+You can find this project at test version of `PiPy <https://test.pypi.org/project/labelord-horacj10/>`_
 
 
 ----
