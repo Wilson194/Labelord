@@ -10,6 +10,10 @@ from labelord import server, github
 from labelord.server import server as serverBlueprint
 
 
+# allow_extra_args = False
+# allow_interspersed_args = False
+
+
 @click.group('labelord')
 @click.option('-c', '--config', envvar='LABELORD_CONFIG', default='config.cfg', type=click.Path(),
               help='Specify path to config file.')
@@ -18,13 +22,15 @@ from labelord.server import server as serverBlueprint
 @click.pass_context
 def cli(ctx, config, token):
     """
-    Main program group
+    Main program group of click
+
     :param ctx: context for object passing
     :param config: path to config file, default config.cfg
     :param token: GITHUB token
     :return: None
     """
     # Create session
+
     session = ctx.obj.get('session', requests.Session())
     session.headers = {'User-Agent': 'Python'}
 

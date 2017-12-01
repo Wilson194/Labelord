@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import os
 import sys
+import configparser
 
 import flask
 import jinja2
@@ -30,7 +31,7 @@ class LabelordWeb(flask.Flask):
         self.lastAction = None
 
 
-    def inject_session(self, session):
+    def inject_session(self, session: requests.Session) -> None:
         """
         Inject session to current app (for testing)
         :param session: session class
@@ -39,19 +40,25 @@ class LabelordWeb(flask.Flask):
         self.session = session
 
 
-    def set_labelord_config(self, config):
+    def set_labelord_config(self, config: configparser.ConfigParser) -> None:
         """
-        Setter for config
+        Setter for config (set ConfigParser object)
+
         :param config: config object
         :return: None
         """
         self.labelordConfig = config
 
 
-    def reload_config(self):
+    def reload_config(self) -> None:
         """
-        Reload config from system variable
+        Reload config from system variable.
+        Look to system variable ``LABELORD_CONFIG`` for path to config file.
+        Default is ``config.cfg``
+        Reload whole authentication and all settings from config
+
         :return: None
+        :raises SystemExit: if no webhook provided
         """
         configPath = os.getenv('LABELORD_CONFIG', 'config.cfg')
 
@@ -71,7 +78,13 @@ class LabelordWeb(flask.Flask):
 
 
 @server.route('/', methods=['GET', 'POST'])
-def index():
+def index() -> str:
+    """
+    Main page of application
+    Show main information about settings of server (repos, basic info..)
+
+    :return:
+    """
     myApp = flask.current_app
     if myApp.session is None:
         token = github.load_token(myApp.labelordConfig, '')
@@ -95,7 +108,7 @@ def index():
 
 # @server.template_filter('gitLink')
 def convert_git_repo(text):
-    """Convert the time format to a different one"""
+    """Create link to GitHub repo"""
 
     return jinja2.Markup('<a href="https://github.com/' + text + '">' + text + '</a>')
 
@@ -103,10 +116,14 @@ def convert_git_repo(text):
 #################################################################################
 #  functions for label handling
 
-def post_request():
+def post_request() -> str:
     """
     Request handler for POST method
-    :return:
+    This function handle all post requests to our page.
+    Parse post request, control all authentication and call correct function from labelord
+
+    :return: str
+    :raises flaskAbort: if come request with bad header
     """
     myApp = flask.current_app
     cfg = myApp.labelordConfig
@@ -154,9 +171,10 @@ def post_request():
     return 'Nothing is happend'
 
 
-def check_allowed_repo(repo):
+def check_allowed_repo(repo: str) -> bool:
     """
     Check if repo is allowed in config
+
     :param repo: repository string
     :return: True if allowed, False otherwise
     """
@@ -203,9 +221,11 @@ def edit_label_request(js):
         labelUpdater.update_label(repo, newLabel, oldLabel)
 
 
-def delete_label_request(js):
+def delete_label_request(js) -> None:
     """
-    Handle POST delete label
+    Handle POST request for delete label
+    Delete label
+
     :param js: json request object
     :return: None
     """
@@ -231,9 +251,11 @@ def delete_label_request(js):
         labelUpdater.remove_label(repo, label)
 
 
-def create_label_request(js):
+def create_label_request(js) -> None:
     """
-    Handle POST create label
+    Handle POST request for create label
+    Create new label
+
     :param js: json request object
     :return: None
     """
@@ -259,9 +281,10 @@ def create_label_request(js):
         labelUpdater.add_label(repo, label)
 
 
-def check_signature(msg, secret, signature):
+def check_signature(msg: str, secret: str, signature: str) -> bool:
     """
-    Check sha1 sum
+    Check sha1 sum of GitHub request
+
     :param msg: body message
     :param secret: secret from config
     :param signature: signature from GitHub header
