@@ -3,7 +3,12 @@ Labelord application
 #####################
 
 .. image:: https://travis-ci.org/Wilson194/Labelord.svg?branch=master
-    :target: https://travis-ci.org/Wilson194/Labelord
+   :target: https://travis-ci.org/Wilson194/Labelord
+
+
+.. image:: https://readthedocs.org/projects/labelord-horacj10/badge/?version=latest
+   :target: http://labelord-horacj10.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 
 This is project for controlling, creating and cloning GitHub issues labels (based on FIT CUT MI-PYT project).
@@ -58,7 +63,7 @@ sys variable `LABELORD_AUTH`. In this file you must specify `token` under sectio
 Documentation
 ##############
 
-Whole docummentation you can find at `this page <http://labelord-horacj10.readthedocs.io/en/stable/#>`_.  If you want to build documentation at your computer just write
+Whole docummentation you can find at `this page <http://labelord-horacj10.readthedocs.io/en/latest/>`_.  If you want to build documentation at your computer just write
 this command in folder docs:
 
 .. code:: bash
