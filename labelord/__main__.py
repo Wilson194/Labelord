@@ -1,3 +1,3 @@
-from .labelord import cli  
+from .labelord import cli
 
-cli()
+cli(obj={})

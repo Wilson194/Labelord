@@ -1,0 +1,14 @@
+{
+  "repository": {
+    "full_name": "wilson194/hello_world"
+  },
+  "label": {
+    "name": "bug",
+    "color": "FF0011"
+  },
+  "changes": {
+    "color": {
+      "from": "fc2929"
+    }
+  }
+}

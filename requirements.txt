@@ -1,4 +1,8 @@
 click
 requests
 configparser
-sys
+Flask
+jinja2
+pytest
+betamax
+flexmock
