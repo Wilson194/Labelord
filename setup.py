@@ -5,7 +5,7 @@ with open('README.rst') as f:
 
 setup(
     name='labelord_horacj10',
-    version='0.4.4',
+    version='0.5.0',
     description='Application for manipulation with labels at GitHub',
     long_description=long_description,
     author='Jan Horáček',
