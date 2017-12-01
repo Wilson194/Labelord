@@ -2,7 +2,11 @@ language: python
 python:
   - "3.5.2"
 
+install:
+  - python setup.py install
+  - pip install -r docs/requirements.txt
 
 # command to run tests
 script:
   - python setup.py pytest
+  - cd docs && make doctest

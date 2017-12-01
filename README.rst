@@ -1,4 +1,8 @@
-# Labelord application [![Build Status](https://travis-ci.com/Wilson194/Labelord.svg?token=PdLqtPfyXNo5KfhxbzAS&branch=v0.4.2)](https://travis-ci.com/Wilson194/)
+#####################
+Labelord application
+#####################
+
+[![Build Status](https://travis-ci.com/Wilson194/Labelord.svg?token=PdLqtPfyXNo5KfhxbzAS&branch=v0.4.2)](https://travis-ci.com/Wilson194/)
 
 
 This is project for controlling, creating and cloning GitHub issues labels (based on FIT CUT MI-PYT project)
