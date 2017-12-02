@@ -63,11 +63,13 @@ sys variable `LABELORD_AUTH`. In this file you must specify `token` under sectio
 Documentation
 ##############
 
-Whole docummentation you can find at `this page <http://labelord-horacj10.readthedocs.io/en/latest/>`_.  If you want to build documentation at your computer just write
-this command in folder docs:
+Whole docummentation you can find at `this page <http://labelord-horacj10.readthedocs.io/en/latest/>`_.
+If you want to build documentation at your computer just write this command in folder docs:
 
 .. code:: bash
 
+   pip install -r requirements.txt
+   pip install -r docs/requirements.txt
    make clean html
 
 
